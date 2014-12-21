@@ -1,3 +1,9 @@
-Feli feladatai:
+﻿Feli feladatai:
 
-G�bor feladatai:
+Bogár class
+Kaja class
+
+Gábor feladatai:
+
+Térkép class
+(Akadály class)
