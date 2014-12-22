@@ -1,5 +1,7 @@
 ﻿Feli feladatai:
 
+Bogár class
+
 Gábor feladatai:
 
 Térkép class
