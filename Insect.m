@@ -5,11 +5,15 @@ classdef Insect < Food
     end
     
     methods
-        function obj = Insect(size)
-            if nargin == 0 
-                size = 100;
+        function obj = Insect(size, foodValue)
+            switch nargin
+                case 0
+                    size = 100;
+                    foodValue = round(rand*5);
+                case 1
+                    foodValue = round(rand*5);
             end
-            obj@Food(size);
+            obj@Food(size,foodValue);
         end
         
         function remFoodSpare = decFoodSpare(self)
