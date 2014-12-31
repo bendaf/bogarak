@@ -15,7 +15,7 @@ classdef Obstacle
                     obj.pos = pos;
                     obj.size = round(rand*10);
                 otherwise
-                    obj.pos = round(rand*100);
+                    obj.pos = [round(rand*100) round(rand*100)];
                     obj.size = round(rand*10);
             end
         end
