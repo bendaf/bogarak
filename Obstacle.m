@@ -1,8 +1,8 @@
 classdef Obstacle
    
     properties
-        pos = [0 0]; % this position is the upper left corner position
-        size = 1; % unit size obstacles
+        pos = [0 0];    % this position is the upper left corner position
+        size = 1;       % unit size obstacles
     end
     
     methods
@@ -18,6 +18,10 @@ classdef Obstacle
                     obj.pos = [round(rand*100) round(rand*100)];
                     obj.size = round(rand*10);
             end
+        end
+        
+        function plot(self)
+            
         end
     end 
 end
