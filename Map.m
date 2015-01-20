@@ -9,14 +9,19 @@ classdef Map < handle
     end
     
     methods
-        function obj = Map(insectsNumber)
+        function obj = Map(insectsNumber, mapSize)
+            if nargin == 2
+                obj.mapSize = [mapSize mapSize];
+            elseif nargin == 0
+                insectsNumber = 5;    
+            end
             % n number of obstacles will be placed on the map
             n = round(rand*(obj.mapSize(1)*obj.mapSize(2))*0.01)+1;
             % this for loop adds random positioned obstacles to the map
             for i = 1:n
                 x = round(rand*obj.mapSize(1))+1;
                 y = round(rand*obj.mapSize(2))+1;
-                obj.obstacles = [obj.obstacles Obstacle([x y],2)];
+                obj.obstacles = [obj.obstacles Obstacle([x y],1)];
             end
             
             % this for loop adds random number of insects
