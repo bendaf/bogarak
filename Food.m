@@ -14,10 +14,10 @@ classdef  Food < handle %% Food class
                     obj.foodSpare = foodSpare;
                     obj.pos = [round(rand*size) round(rand*size)];
                 case 1
-                    obj.foodSpare = round(rand*5);
+                    obj.foodSpare = round(rand*4)+1;
                     obj.pos = [round(rand*size) round(rand*size)];
                 otherwise
-                    obj.foodSpare = round(rand*5);
+                    obj.foodSpare = round(rand*4)+1;
                     obj.pos = [round(rand*100)  round(rand*100)];
             end
         end
