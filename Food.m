@@ -21,5 +21,9 @@ classdef  Food < handle %% Food class
                     obj.pos = [round(rand*100)  round(rand*100)];
             end
         end
+        
+        function plot(self)
+            plot(self.pos(1),self.pos(2),'k.','MarkerSize',12);
+        end
     end
 end
