@@ -32,35 +32,64 @@ classdef Map < handle
         
         % plots all of the objects on the map
         function plot(self)
-            arrayfun(@step, self.bugs);
+            clf;
+            hold on;
             arrayfun(@plot, self.foodSupply);
             arrayfun(@plot, self.obstacles);
             arrayfun(@plot, self.bugs);
+            axis([ 0 self.mapSize(1) 0 self.mapSize(2)]);
+            drawnow;
+            
         end 
         
-%         function path = shortestPath(self, posFrom, posTo, vel)
-%             pathVec = posTo - posFrom;
-%             pathVec(1) = (pathVec(1) / norm(pathVec))*vel;
-%             pathVec(2) = (pathVec(2) / norm(pathVec))*vel;            
-%             path = arrayfun(@round,pathVec);
-%         end
+        function self = step(self)
+            if(round(rand*10)==1)
+                self.foodSupply = [self.foodSupply Food(self.mapSize(1))];
+            end
+            
+            s = size(self.bugs);
+            for i = 1:s(2)
+                self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos,...
+               self.nearestFood(self.bugs(i).pos));
+            end
+        end
         
-        function nextStep = calcNextSteps(self, posFrom, posTo)
-            if nargin == 3
+        function nfPos= nearestFood(self, pos)
+            s = size(self.foodSupply);
+            if s(2) == 0
+                nfPos = [];
+            elseif s(2) == 1
+                nfPos = self.foodSupply(1,:).pos;
+            else
+                min = self.foodSupply(1,:).pos;
+                for i = 2:s(2)
+                    if ~Map.isCloser(min,self.foodSupply(i).pos,pos)
+                        min=self.foodSupply(i,:);
+                    end
+                end
+                nfPos = min;
+            end
+        end
+        
+        function nextStep = calcNextStep(self, posFrom, posTo)
+            if nargin == 3  && ~isempty(posTo)
                 nextPos = posTo;
                 possibleSteps = self.getPosSteps(nextPos);
                 possibleSteps = Map.quicksort(possibleSteps,posFrom);
                 
-                while possibleSteps(1) ~= posFrom
-                    nextPos = possibleSteps(1);
-                    possibleSteps(1) = [];
-                    possibleSteps = [possibleSteps; self.getPosSteps(nextPos);]; %#ok<AGROW>
+                while possibleSteps(1,:) ~= posFrom
+                    nextPos = possibleSteps(1,:);
+                    possibleSteps(1,:) = [];
+                    possibleSteps = [self.getPosSteps(nextPos); possibleSteps]; %#ok<AGROW>
+                    possibleSteps = unique(possibleSteps,'rows');
                     possibleSteps = Map.quicksort(possibleSteps, posFrom);
+%                     posTo = possibleSteps(1,:)
+%                     posFrom = posFrom
                 end
                 nextStep = nextPos;
             end
             
-            if nargin == 2
+            if nargin == 2 || isempty(posTo)
                 goodStep=false;
                 while ~goodStep
                     step = [round(rand*2)-1 round(rand*2)-1];
@@ -110,27 +139,26 @@ classdef Map < handle
         
         function [sortedStepVec] = quicksort(stepVec, posTo)
             s = size(stepVec);
+            lastSwap = s(1)-1;
             for j = 1:s(1)-1
-                for i = 1:s(1)-j
-                    if Map.isCloser(stepVec(i,:),stepVec(i+1,:),posTo)
+                isSorted = true;
+                curSwap = -1;
+                for i = 1:lastSwap
+                    if ~Map.isCloser(stepVec(i,:),stepVec(i+1,:),posTo)
                         idStepVec = stepVec(i,:);
                         stepVec(i,:) = stepVec(i+1,:);
                         stepVec(i+1,:) = idStepVec;
+                        isSorted = false;
+                        curSwap = i;
                     end
                 end
+                if(isSorted)
+                    sortedStepVec = stepVec;
+                    return;
+                end;
+                lastSwap = curSwap;
             end
             sortedStepVec = stepVec;
-        end
-        
-        function isContains = contains(stepVec, goal)
-            isContains = false;
-            s = size(stepVec);
-            for i = 0:s(2)
-                if goal == stepVec(i) 
-                    isContains = true;
-                    break;
-                end;
-            end
         end
     end
 end
