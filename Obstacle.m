@@ -6,7 +6,8 @@ classdef Obstacle
     end
     
     methods
-        function obj = Obstacle(pos, size) % obstacle contructor method
+        % obstacle contructor method
+        function obj = Obstacle(pos, size)
             switch nargin
                 case 2
                     obj.pos = pos;
