@@ -21,7 +21,8 @@ classdef Obstacle
         end
         
         function plot(self)
-            
+            rectangle('Position', ...
+                [self.pos(1),self.pos(2),self.size,self.size]);
         end
     end 
 end

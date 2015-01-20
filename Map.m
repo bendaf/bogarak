@@ -11,7 +11,7 @@ classdef Map
     methods
         function obj = Map(insectsNumber)
             % n number of obstacles will be placed on the map
-            n = round(rand*4)+1;
+            n = round(rand*(obj.mapSize(1)*obj.mapSize(2))*0.1)+1;
             % this for loop adds random positioned obstacles to the map
             for i = 1:n
                 x = round(rand*obj.mapSize(1))+1;
@@ -27,9 +27,9 @@ classdef Map
         
         % removes a food object which has been eaten by an insect
         function plot(self)
-            arrayfun(@plot, self.foodSupply(:));
-            arrayfun(@plot, self.obstacles(:));
-            arrayfun(@plot, self.bugs(:));
+            arrayfun(@plot, self.foodSupply);
+            arrayfun(@plot, self.obstacles);
+            arrayfun(@plot, self.bugs);
         end
     end
 end
