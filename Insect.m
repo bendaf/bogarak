@@ -1,32 +1,39 @@
-classdef Insect < Food
+classdef Insect < Food % Insect inherite from food (pos and foodSpare)
     properties
-        headDirection = 0;
-        foodSpare = 10;
+        headDirection = 0;  % Direction of the head in degrees
     end
     
     methods
-        function obj = Insect(size, foodValue)
+        %%% Constructor 
+        % size: size of the map
+        % foodSpare: starting foodSpare of the insect
+        function obj = Insect(size, foodSpare) 
             switch nargin
                 case 0
                     size = 100;
-                    foodValue = round(rand*5);
+                    foodSpare = round(rand*5);
                 case 1
-                    foodValue = round(rand*5);
+                    foodSpare = round(rand*5);
             end
-            obj@Food(size,foodValue);
+            obj@Food(size, foodSpare);
         end
         
+        %%% Decrease the food spare of the insect 
+        % return the remaining food spare 
         function remFoodSpare = decFoodSpare(self)
             self.foodSpare = self.foodSpare - 1;
             remFoodSpare = self.foodSpare;
         end
         
         %NEED TO MODIFY
+        %%% Calculate the shortest path to pos
+        % return with the next step 
         function direction = calcDirection(self, pos)
             direction = pos - self.pos;
         end
         
-        function step(self,pos)
+        %%% Make a step randomly or the direction of pos
+        function step(self, pos)
             switch nargin
                 case 2
                     direction = self.calcDirection(pos);
@@ -36,8 +43,11 @@ classdef Insect < Food
             self.pos = self.pos + direction;
         end
         
-        function eatFood(self, food)
-            self.foodSpare = self. foodSpare + food.foodValue;
+        %%% Eat the food
+        function remFoodSpare = eatFood(self, food)
+            self.foodSpare = self.foodSpare + food.foodSpare;
+            remFoodSpare = self.foodSpare;
         end
+        
     end
 end
