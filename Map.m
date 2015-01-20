@@ -27,12 +27,10 @@ classdef Map
         
         % plots all of the objects on the map
         function plot(self)
+            arrayfun(@step, self.bugs);
             arrayfun(@plot, self.foodSupply);
-            
             arrayfun(@plot, self.obstacles);
-            
             arrayfun(@plot, self.bugs);
-<<<<<<< HEAD
         end 
         
 %         function path = shortestPath(self, posFrom, posTo, vel)
@@ -128,9 +126,6 @@ classdef Map
                     break;
                 end;
             end
-=======
-            arrayfun(@step, self.bugs);
->>>>>>> 2e810e8cb99a3807c59715ff890068a83a291cb2
         end
     end
 end
