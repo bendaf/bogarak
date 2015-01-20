@@ -49,5 +49,11 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             remFoodSpare = self.foodSpare;
         end
         
+        %%%
+        function plot(self)
+            plot(self.pos(1),self.pos(2),'o');
+            line([self.pos(1) self.pos(1)+cos(self.headDirection)], ...
+                 [self.pos(2) self.pos(2)+sin(self.headDirection)]);
+        end
     end
 end
