@@ -1,4 +1,4 @@
-classdef Map
+classdef Map < handle
     
     properties
         mapSize = [100 100];    % map size is 100*100 
