@@ -6,8 +6,8 @@ classdef Map < handle
         bugs = [];              % bugs on the map
         foodSupply = [];        % food on the map
         obstacles = [];         % obstacles on the map
-        stepCounter = 1;
-        bugsInTime = [];
+        stepCounter = 1;        % time 
+        bugsInTime = [];        % Saved data of the bug population
     end
     
     methods
@@ -16,10 +16,10 @@ classdef Map < handle
                 obj.mapSize = [mapSize mapSize];
             elseif nargin >= 2
                 obj.mapSize = [mapSize mapSize];
-                time = 10000;
+                time = 200;
             elseif nargin == 0
                 insectsNumber = 5;    
-                time = 10000;
+                time = 200;
             end
             % n number of obstacles will be placed on the map
             n = round(rand*(obj.mapSize(1)*obj.mapSize(2))*0.01)+1;
@@ -72,26 +72,16 @@ classdef Map < handle
                 self.bugsInTime(self.stepCounter, i) = self.bugs(i).foodSpare; 
             end
             
-            % The bugs eat the food under them
+            % The bugs eat the food and other bugs under them
             self.eat();
             
             %Increase stepcounter
             self.stepCounter = self.stepCounter + 1;
             
-            % Bugs calculate their next step or die
+            % Bugs calculate their next step
             s = size(self.bugs);
             for i = 1:s(2)
-%                 if mod(self.stepCounter,7) == 0
-%                     if i <= s(2) && i > 0
-%                         if self.bugs(i).decFoodSpare < 1
-%                             self.bugs(i) = [];
-%                             i = i-1; %#ok<FXSET>
-%                             s = size(self.bugs);
-%                         end
-%                     end
-%                 end
                 if self.bugs(i).isAlive
-%                 if i <= s(2) && i > 0
                     if mod(self.stepCounter,7) == 0
                         self.bugs(i).decFoodSpare;
                     end
@@ -111,17 +101,20 @@ classdef Map < handle
                 end
             end
             
-            % Place a new food
+            % Place a new food randomly
             if(round(rand*5)==1)
                 self.foodSupply = [self.foodSupply Food(self.mapSize(1))];
             end
         end
         
+        % return with the pos of the nearest bug in the radious
         function bugPos = nearestBug(self, pos, radius)
             if nargin == 2 
-                radius = 2;
+                radius = 2;  % 2 is the default
             end
             bugPos = [];
+            
+            % search for the live bugs in the radious
             s = size(self.bugs);
             for i = -radius:radius
                 for j = -radius:radius
@@ -135,6 +128,7 @@ classdef Map < handle
                     end
                 end
             end
+            % select the closest bug
             s = size(bugPos);
             if s(1)>1
                 bugPos = Map.quicksort(bugPos,pos);
@@ -144,25 +138,27 @@ classdef Map < handle
         
         % Check which bug can eat and feed them
         function self = eat(self)
+            % Bugs eat each other
             sb = size(self.bugs);
             for i = 1:sb(2)
-                for j = i:sb(2)
-                    if self.bugs(i).isAlive && self.bugs(j).isAlive
-%                     if i<=sb(2) && j<=sb(2) && i>0 && j >0 
-                        if Map.isEqual(self.bugs(i).pos, self.bugs(j).pos) && i ~= j
-                            self.bugs(i).eatFood(self.bugs(j));
-                            self.bugs(j).foodSpare = 0;
-                            %j = j-1; %#ok<FXSET>
-                            %i = i-1; %#ok<FXSET>
-                            %sb = size(self.bugs);
+                if self.bugs(i).isAlive
+                    for j = i:sb(2)
+                        if self.bugs(j).isAlive
+                            if Map.isEqual(self.bugs(i).pos, self.bugs(j).pos) && i ~= j
+                                self.bugs(i).eatFood(self.bugs(j));
+                                self.bugs(j).foodSpare = 0;
+                            end
                         end
                     end
                 end
             end
+            
+            % Bugs eat the food
             sf = size(self.foodSupply);
             for i = 1:sf(2)
+                %#In this version just one bug can eat the food
                 for j = 1:sb(2)
-                    if i<=sf(2) && i>0
+                    if i<=sf(2) && i>0 && self.bugs(j).isAlive
                         if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
                             self.bugs(j).eatFood(self.foodSupply(i));
                             self.foodSupply(i) = [];
@@ -171,6 +167,8 @@ classdef Map < handle
                         end
                     end
                 end
+                
+                %#In this version the bugs divide the food, but now they eat each other
 %                 curBugs = 0;
 %                 for j = 1:sb(2)
 %                     if i<=sf(2)
@@ -216,7 +214,8 @@ classdef Map < handle
         
         % calculate the next position for the bug
         function nextStep = calcNextStep(self, posFrom, posTo)
-            if nargin == 3  && ~isempty(posTo)
+            % when we have destination
+            if nargin == 3  && ~isempty(posTo) 
                 nextPos = posTo;
                 possibleSteps = self.getPosSteps(nextPos);
                 possibleSteps = Map.quicksort(possibleSteps,posFrom);
@@ -226,12 +225,10 @@ classdef Map < handle
                     possibleSteps = [self.getPosSteps(nextPos); possibleSteps]; %#ok<AGROW>
                     possibleSteps = unique(possibleSteps,'rows');
                     possibleSteps = Map.quicksort(possibleSteps, posFrom);
-%                     posTo = possibleSteps(1,:)
-%                     posFrom = posFrom
                 end
                 nextStep = nextPos;
             end
-            
+            % when we don't have a destination just a random step
             if nargin == 2 || isempty(posTo)
                 goodStep=false;
                 while ~goodStep
@@ -242,18 +239,21 @@ classdef Map < handle
             end
         end
         
-        % Return with the reachable positions for the posFrom
+        % Return with the reachable positions from the posFrom
         function moreValidPos = getPosSteps(self, posFrom)
-            moreValidPos = [];
+            moreValidPos = zeros(9,2);
+            count = 0;
             for i = -1:1
                 for j = -1:1
                     if self.isValidPos(posFrom + [i j]) 
                         if i~=0 || j ~=0 
-                            moreValidPos = [moreValidPos; posFrom + [i j]]; %#ok<AGROW>
+                            count = count + 1;
+                            moreValidPos(count,:) = posFrom + [i j];
                         end
                     end
                 end
             end
+            moreValidPos = moreValidPos(1:count,:);
         end
         
         % Return with false if the pos is invalid on map
@@ -281,6 +281,7 @@ classdef Map < handle
         
         % return 0 if pos1 is closer to posTo than pos2 else 1
         function index = isCloser(pos1, pos2, posTo)
+            % if one of the pos is empty then false
             if isempty(pos1) || isempty(pos2) || isempty(posTo)
                 index = 0;
             else
@@ -290,7 +291,7 @@ classdef Map < handle
             end
         end
         
-        % 
+        % check the equality of two pos
         function isEqual = isEqual(pos1, pos2)
             isEqual = pos1(1) == pos2(1) && pos1(2) == pos2(2);
         end
