@@ -110,45 +110,93 @@ classdef Map < handle
             end
         end
         
-        % Check which bug can eat and feed them
-        function self = eat(self)
-            sb = size(self.bugs);
-            sf = size(self.foodSupply);
-            for i = 1:sf(2)
-                curBugs = 0;
-                for j = 1:sb(2)
-                    if i<=sf(2)
-                        if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
-                            curBugs = curBugs + self.bugs(j).foodSpare;
+        function bugPos = nearestBug(self, pos, radius)
+            if nargin == 2 
+                radius = 2;
+            end
+            bugPos = [];
+            s = size(self.bugs);
+            for i = -radius:radius
+                for j = -radius:radius
+                    if i ~= 0 || j ~= 0
+                        for ib = 1:s(2)
+                            if Map.isEqual(pos + [i j], self.bugs(ib).pos)
+                                bugPos = [bugPos; pos + [i j]];
+                            end
                         end
                     end
                 end
-                if curBugs > 0 
-                    for j = 1:sb(2)
-                        if i<=sf(2)
-                            if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
-                                self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare * ...
-                                (self.bugs(j).foodSpare/curBugs));
-                            end
-                        end
-                    end 
-                    self.foodSupply(i) = [];
-                    i = i-1; %#ok<FXSET>
-                    sf = size(self.foodSupply);
-                end
+            end
+            s = size(bugPos);
+            if s(1)>1
+                bugPos = Map.quicksort(bugPos,pos);
+                bugPos = bugPos(1,:);
             end
         end
         
-        % return with the nearesr food position to the pos
+        % Check which bug can eat and feed them
+        function self = eat(self)
+            sb = size(self.bugs);
+            for i = 1:sb(2)
+                for j = i:sb(2)
+                    if i<=sb(2) && j<=sb(2) && i>0 && j >0 
+                        if Map.isEqual(self.bugs(i).pos, self.bugs(j).pos) && i ~= j
+                            self.bugs(i).foodSpare = self.bugs(i).foodSpare + self.bugs(j).foodSpare;
+                            self.bugs(j) = [];
+                            j = j-1; %#ok<FXSET>
+                            i = i-1; %#ok<FXSET>
+                            sb = size(self.bugs);
+                        end
+                    end
+                end
+            end
+            sf = size(self.foodSupply);
+            for i = 1:sf(2)
+                for j = 1:sb(2)
+                    if i<=sf(2) && i>0
+                        if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+                            self.bugs(j).eatFood(self.foodSupply(i));
+                            self.foodSupply(i) = [];
+                            i = i-1; %#ok<FXSET>
+                            sf = size(self.foodSupply);
+                        end
+                    end
+                end
+%                 curBugs = 0;
+%                 for j = 1:sb(2)
+%                     if i<=sf(2)
+%                         if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+%                             curBugs = curBugs + self.bugs(j).foodSpare;
+%                         end
+%                     end
+%                 end
+%                 if curBugs > 0 
+%                     for j = 1:sb(2)
+%                         if i<=sf(2)
+%                             if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+%                                 self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare * ...
+%                                 (self.bugs(j).foodSpare/curBugs));
+%                             end
+%                         end
+%                     end 
+%                     self.foodSupply(i) = [];
+%                     i = i-1; %#ok<FXSET>
+%                     sf = size(self.foodSupply);
+%                 end
+            end
+        end
+        
+        % return with the nearesr food or bug position to the pos
         function nfPos = nearestFood(self, pos)
             s = size(self.foodSupply);
+            nearestBug = self.nearestBug(pos,4);
             if s(2) == 0
-                nfPos = [];
-            elseif s(2) == 1
+                nfPos = nearestBug;
+            elseif s(2) == 1 && isempty(nearestBug)
                 nfPos = self.foodSupply(1).pos;
             else % min search
-                min = self.foodSupply(1).pos;
-                for i = 2:s(2)
+                min = nearestBug;
+                for i = 1:s(2)
                     if ~Map.isCloser(min,self.foodSupply(i).pos,pos)
                         min=self.foodSupply(i).pos;
                     end
@@ -224,9 +272,13 @@ classdef Map < handle
         
         % return 0 if pos1 is closer to posTo than pos2 else 1
         function index = isCloser(pos1, pos2, posTo)
-           pathVec1 = posTo - pos1;
-           pathVec2 = posTo - pos2;
-           index = (norm(pathVec1) < norm(pathVec2)) ; 
+            if isempty(pos1) || isempty(pos2) || isempty(posTo)
+                index = 0;
+            else
+                pathVec1 = posTo - pos1;
+                pathVec2 = posTo - pos2;
+                index = (norm(pathVec1) < norm(pathVec2)) ; 
+            end
         end
         
         % 
