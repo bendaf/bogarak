@@ -37,7 +37,8 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             remFoodSpare = self.foodSpare;
         end
         
-        function self = setHeadDirection(self,pos)
+        %%% Change the direction of the bug's head in the direction of the pos
+        function self = setHeadDirection(self, pos)
             if isempty(pos)
                 self.headDirection = rand*360;
             else

@@ -22,6 +22,7 @@ classdef  Food < handle %% Food class
             end
         end
         
+        %%% plot the food
         function plot(self)
             plot(self.pos(1),self.pos(2),'r.','MarkerSize',12);
         end
