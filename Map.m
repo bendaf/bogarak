@@ -6,15 +6,20 @@ classdef Map < handle
         bugs = [];              % bugs on the map
         foodSupply = [];        % food on the map
         obstacles = [];         % obstacles on the map
-        stepCounter = 0;
+        stepCounter = 1;
+        bugsInTime = [];
     end
     
     methods
-        function obj = Map(insectsNumber, mapSize)
-            if nargin == 2
+        function obj = Map(insectsNumber, mapSize, time)
+            if nargin >= 3
                 obj.mapSize = [mapSize mapSize];
+            elseif nargin >= 2
+                obj.mapSize = [mapSize mapSize];
+                time = 10000;
             elseif nargin == 0
                 insectsNumber = 5;    
+                time = 10000;
             end
             % n number of obstacles will be placed on the map
             n = round(rand*(obj.mapSize(1)*obj.mapSize(2))*0.01)+1;
@@ -29,6 +34,7 @@ classdef Map < handle
             for i = 1:insectsNumber
                 obj.bugs = [obj.bugs Insect(obj.mapSize(1))];
             end
+            obj.bugsInTime = zeros(time,insectsNumber);
         end
         
         % plots all of the objects on the map
@@ -56,20 +62,24 @@ classdef Map < handle
         
         % Make a step
         function self = step(self)
+            
+            % Save bugs
+            s = size(self.bugs);
+            self.stepCounter
+            for i = 1:s(2)
+                self.bugsInTime(self.stepCounter, i) = self.bugs(i).foodSpare; 
+            end
+            
             % The bugs eat the food under them
             self.eat();
             
             %Increase stepcounter
-            if self.stepCounter == 7
-                self.stepCounter = 0;
-            else
-                self.stepCounter = self.stepCounter + 1;
-            end
+            self.stepCounter = self.stepCounter + 1;
             
             % Bugs calculate their next step or die
             s = size(self.bugs);
             for i = 1:s(2)
-                if self.stepCounter == 0
+                if mod(self.stepCounter,7) == 0
                     if i <= s(2) && i > 0
                         if self.bugs(i).decFoodSpare < 1
                             self.bugs(i) = [];
@@ -82,6 +92,15 @@ classdef Map < handle
                     foodPos = self.nearestFood(self.bugs(i).pos);
                     self.bugs(i).setHeadDirection(foodPos);
                     self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
+                    
+                    if(self.bugs(i).foodSpare > 11)
+                        fs = 11;
+                    else
+                        fs = self.bugs(i).foodSpare;
+                    end
+                    if mod(self.stepCounter,13 - fs) == 0
+                        self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
+                    end
                 end
             end
             
