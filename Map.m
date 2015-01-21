@@ -6,6 +6,7 @@ classdef Map < handle
         bugs = [];              % bugs on the map
         foodSupply = [];        % food on the map
         obstacles = [];         % obstacles on the map
+        stepCounter = 0;
     end
     
     methods
@@ -43,14 +44,36 @@ classdef Map < handle
         end 
         
         function self = step(self)
-            if(round(rand*10)==1)
-                self.foodSupply = [self.foodSupply Food(self.mapSize(1))];
+            % The bugs eat the food under them
+            self.eat();
+            
+            %Increase stepcounter
+            if self.stepCounter == 7
+                self.stepCounter = 0;
+            else
+                self.stepCounter = self.stepCounter + 1;
             end
             
             s = size(self.bugs);
             for i = 1:s(2)
-                self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos,...
-               self.nearestFood(self.bugs(i).pos));
+                if self.stepCounter == 0
+                    if i <= s(2) && i > 0
+                        if self.bugs(i).decFoodSpare < 1
+                            self.bugs(i) = [];
+                            i = i-1; %#ok<FXSET>
+                            s = size(self.bugs);
+                        end
+                    end
+                end
+                if i <= s(2) && i > 0
+                    self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos,...
+                                self.nearestFood(self.bugs(i).pos));
+                end
+            end
+            
+            % Place a new food
+            if(round(rand*5)==1)
+                self.foodSupply = [self.foodSupply Food(self.mapSize(1))];
             end
         end
         
@@ -59,12 +82,12 @@ classdef Map < handle
             if s(2) == 0
                 nfPos = [];
             elseif s(2) == 1
-                nfPos = self.foodSupply(1,:).pos;
-            else
-                min = self.foodSupply(1,:).pos;
+                nfPos = self.foodSupply(1).pos;
+            else % min search
+                min = self.foodSupply(1).pos;
                 for i = 2:s(2)
                     if ~Map.isCloser(min,self.foodSupply(i).pos,pos)
-                        min=self.foodSupply(i,:);
+                        min=self.foodSupply(i).pos;
                     end
                 end
                 nfPos = min;
