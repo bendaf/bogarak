@@ -1,4 +1,4 @@
-classdef Obstacle
+classdef Obstacle < handle
    
     properties
         pos = [0 0];    % this position is the upper left corner position

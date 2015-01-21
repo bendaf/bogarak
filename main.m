@@ -20,4 +20,4 @@ xlabel('Time'), ylabel('Foodspare'),title('Foodspare of bugs in time');
 figure; 
 plot(1:time,sum(bugMap.bugsInTime(1:time,:)'>0));
 xlabel('Time'), ylabel('Population'),title('Population in time');
-axis([1 time 0 numberOfBugs]);
+axis([1 time 0 numberOfBugs+1]);
