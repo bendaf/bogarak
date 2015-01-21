@@ -1,9 +1,10 @@
 clear all;
 
-numberOfBugs = 30;
+numberOfBugs = 2;
+
 mapSize = 40;
 time = 10;
-bugMap = Map(numberOfBugs,mapSize,time);   % creates a map with 10 bugs
+bugMap = Map(numberOfBugs,mapSize,time);
 
 grid on;
 for i=1:time
