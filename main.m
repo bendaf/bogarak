@@ -1,8 +1,8 @@
 clear all;
 
-numberOfBugs = 50;
+numberOfBugs = 30;
 mapSize = 40;
-time = 5;
+time = 10;
 bugMap = Map(numberOfBugs,mapSize,time);   % creates a map with 10 bugs
 
 grid on;
@@ -14,6 +14,9 @@ end
 
 figure;
 plot(1:time,bugMap.bugsInTime);
+xlabel('Time'), ylabel('Foodspare'),title('Foodspare of bugs in time');
 
 figure; 
 plot(1:time,sum(bugMap.bugsInTime(1:time,:)'>0));
+xlabel('Time'), ylabel('Population'),title('Population in time');
+axis([1 time 0 numberOfBugs]);

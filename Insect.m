@@ -46,11 +46,21 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             end
         end
         
+        function isAlive = isAlive(self)
+            isAlive = self.foodSpare >= 1;
+        end
+        
         %%% Plot the insect
         function plot(self)
-            plot(self.pos(1),self.pos(2),'o');
-            line([self.pos(1) self.pos(1)+cosd(self.headDirection)], ...
+            if self.isAlive
+                plot(self.pos(1),self.pos(2),'o');
+                line([self.pos(1) self.pos(1)+cosd(self.headDirection)], ...
                  [self.pos(2) self.pos(2)+sind(self.headDirection)]);
+            else
+                plot(self.pos(1),self.pos(2),'ro');
+                line([self.pos(1) self.pos(1)+cosd(self.headDirection)], ...
+                 [self.pos(2) self.pos(2)+sind(self.headDirection)],'Color','r');
+            end
         end
     end
 end

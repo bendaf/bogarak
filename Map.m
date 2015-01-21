@@ -43,6 +43,7 @@ classdef Map < handle
             
             % plot the map
             subplot(1,2,1);
+            title('Map')
             hold on;
             arrayfun(@plot, self.foodSupply);
             arrayfun(@plot, self.obstacles);
@@ -51,10 +52,11 @@ classdef Map < handle
             
             % plot the foodSpare
             subplot(1,2,2);
+            title('Foodspare of the bugs');
             hold on;
             s = size(self.bugs);
             for i = 1:s(2)
-                line([i i],[0 self.bugs(i).foodSpare],'LineWidth',8);
+                line([i i],[0 self.bugs(i).foodSpare],'LineWidth',7);
             end
             axis([0 s(2)+1 0 12]);
             drawnow;
@@ -79,26 +81,31 @@ classdef Map < handle
             % Bugs calculate their next step or die
             s = size(self.bugs);
             for i = 1:s(2)
-                if mod(self.stepCounter,7) == 0
-                    if i <= s(2) && i > 0
-                        if self.bugs(i).decFoodSpare < 1
-                            self.bugs(i) = [];
-                            i = i-1; %#ok<FXSET>
-                            s = size(self.bugs);
-                        end
+%                 if mod(self.stepCounter,7) == 0
+%                     if i <= s(2) && i > 0
+%                         if self.bugs(i).decFoodSpare < 1
+%                             self.bugs(i) = [];
+%                             i = i-1; %#ok<FXSET>
+%                             s = size(self.bugs);
+%                         end
+%                     end
+%                 end
+                if self.bugs(i).isAlive
+%                 if i <= s(2) && i > 0
+                    if mod(self.stepCounter,7) == 0
+                        self.bugs(i).decFoodSpare;
                     end
-                end
-                if i <= s(2) && i > 0
                     foodPos = self.nearestFood(self.bugs(i).pos);
                     self.bugs(i).setHeadDirection(foodPos);
                     self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                     
-                    if(self.bugs(i).foodSpare > 11)
-                        fs = 11;
-                    else
-                        fs = self.bugs(i).foodSpare;
-                    end
-                    if mod(self.stepCounter,13 - fs) == 0
+%                     Speed algorithm
+%                     if(self.bugs(i).foodSpare > 11)
+%                         fs = 11;
+%                     else
+%                         fs = self.bugs(i).foodSpare;
+%                     end
+                    if mod(self.stepCounter, self.bugs(i).foodSpare) == 0
                         self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                     end
                 end
@@ -120,7 +127,8 @@ classdef Map < handle
                 for j = -radius:radius
                     if i ~= 0 || j ~= 0
                         for ib = 1:s(2)
-                            if Map.isEqual(pos + [i j], self.bugs(ib).pos)
+                            if Map.isEqual(pos + [i j], self.bugs(ib).pos) && ...
+                                   self.bugs(ib).isAlive
                                 bugPos = [bugPos; pos + [i j]];
                             end
                         end
@@ -139,13 +147,14 @@ classdef Map < handle
             sb = size(self.bugs);
             for i = 1:sb(2)
                 for j = i:sb(2)
-                    if i<=sb(2) && j<=sb(2) && i>0 && j >0 
+                    if self.bugs(i).isAlive && self.bugs(j).isAlive
+%                     if i<=sb(2) && j<=sb(2) && i>0 && j >0 
                         if Map.isEqual(self.bugs(i).pos, self.bugs(j).pos) && i ~= j
-                            self.bugs(i).foodSpare = self.bugs(i).foodSpare + self.bugs(j).foodSpare;
-                            self.bugs(j) = [];
-                            j = j-1; %#ok<FXSET>
-                            i = i-1; %#ok<FXSET>
-                            sb = size(self.bugs);
+                            self.bugs(i).eatFood(self.bugs(j));
+                            self.bugs(j).foodSpare = 0;
+                            %j = j-1; %#ok<FXSET>
+                            %i = i-1; %#ok<FXSET>
+                            %sb = size(self.bugs);
                         end
                     end
                 end
