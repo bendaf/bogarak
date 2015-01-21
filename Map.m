@@ -99,16 +99,17 @@ classdef Map < handle
                 curBugs = 0;
                 for j = 1:sb(2)
                     if i<=sf(2)
-                        if self.bugs(j).pos == self.foodSupply(i).pos
-                            curBugs = curBugs + 1;
+                        if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+                            curBugs = curBugs + self.bugs(j).foodSpare;
                         end
                     end
                 end
                 if curBugs > 0 
                     for j = 1:sb(2)
                         if i<=sf(2)
-                            if self.bugs(j).pos == self.foodSupply(i).pos
-                                self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare/curBugs);
+                            if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+                                self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare * ...
+                                (self.bugs(j).foodSpare/curBugs));
                             end
                         end
                     end 
@@ -143,8 +144,7 @@ classdef Map < handle
                 nextPos = posTo;
                 possibleSteps = self.getPosSteps(nextPos);
                 possibleSteps = Map.quicksort(possibleSteps,posFrom);
-                
-                while possibleSteps(1,:) ~= posFrom
+                while ~Map.isEqual(possibleSteps(1,:), posFrom)
                     nextPos = possibleSteps(1,:);
                     possibleSteps(1,:) = [];
                     possibleSteps = [self.getPosSteps(nextPos); possibleSteps]; %#ok<AGROW>
@@ -184,16 +184,19 @@ classdef Map < handle
         function isValidPos = isValidPos(self, pos)
             isValidPos = true;
             s = size(self.obstacles);
-            for i = 1:s(2)
-                if pos == self.obstacles(i).pos
-                    isValidPos = false;
-                end
-            end
             if pos(1)<0 || pos(1)>self.mapSize(1)
                 isValidPos = false;
+                return;
             end
             if pos(2)<0 || pos(2)>self.mapSize(2)
                 isValidPos = false;
+                return;
+            end
+            for i = 1:s(2)
+                if Map.isEqual(pos, self.obstacles(i).pos)
+                    isValidPos = false;
+                    return;
+                end
             end
         end
     end
@@ -205,6 +208,11 @@ classdef Map < handle
            pathVec1 = posTo - pos1;
            pathVec2 = posTo - pos2;
            index = (norm(pathVec1) < norm(pathVec2)) ; 
+        end
+        
+        % 
+        function isEqual = isEqual(pos1, pos2)
+            isEqual = pos1(1) == pos2(1) && pos1(2) == pos2(2);
         end
         
         % short the steps vector with optimized bublesort
