@@ -34,15 +34,27 @@ classdef Map < handle
         % plots all of the objects on the map
         function plot(self)
             clf;
+            
+            % plot the map
+            subplot(1,2,1);
             hold on;
             arrayfun(@plot, self.foodSupply);
             arrayfun(@plot, self.obstacles);
             arrayfun(@plot, self.bugs);
             axis([ 0 self.mapSize(1) 0 self.mapSize(2)]);
-            drawnow;
             
+            % plot the foodSpare
+            subplot(1,2,2);
+            hold on;
+            s = size(self.bugs);
+            for i = 1:s(2)
+                line([i i],[0 self.bugs(i).foodSpare],'LineWidth',8);
+            end
+            axis([0 s(2)+1 0 12]);
+            drawnow;
         end 
         
+        % Make a step
         function self = step(self)
             % The bugs eat the food under them
             self.eat();
@@ -54,6 +66,7 @@ classdef Map < handle
                 self.stepCounter = self.stepCounter + 1;
             end
             
+            % Bugs calculate their next step or die
             s = size(self.bugs);
             for i = 1:s(2)
                 if self.stepCounter == 0
@@ -77,7 +90,36 @@ classdef Map < handle
             end
         end
         
-        function nfPos= nearestFood(self, pos)
+        % Check which bug can eat and feed them
+        function self = eat(self)
+            sb = size(self.bugs);
+            sf = size(self.foodSupply);
+            for i = 1:sf(2)
+                curBugs = 0;
+                for j = 1:sb(2)
+                    if i<=sf(2)
+                        if self.bugs(j).pos == self.foodSupply(i).pos
+                            curBugs = curBugs + 1;
+                        end
+                    end
+                end
+                if curBugs > 0 
+                    for j = 1:sb(2)
+                        if i<=sf(2)
+                            if self.bugs(j).pos == self.foodSupply(i).pos
+                                self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare/curBugs);
+                            end
+                        end
+                    end 
+                    self.foodSupply(i) = [];
+                    i = i-1; %#ok<FXSET>
+                    sf = size(self.foodSupply);
+                end
+            end
+        end
+        
+        % return with the nearesr food position to the pos
+        function nfPos = nearestFood(self, pos)
             s = size(self.foodSupply);
             if s(2) == 0
                 nfPos = [];
@@ -94,6 +136,7 @@ classdef Map < handle
             end
         end
         
+        % calculate the next position for the bug
         function nextStep = calcNextStep(self, posFrom, posTo)
             if nargin == 3  && ~isempty(posTo)
                 nextPos = posTo;
@@ -122,7 +165,7 @@ classdef Map < handle
             end
         end
         
-        
+        % Return with the reachable positions for the posFrom
         function moreValidPos = getPosSteps(self, posFrom)
             moreValidPos = [];
             for i = -1:1
@@ -136,6 +179,7 @@ classdef Map < handle
             end
         end
         
+        % Return with false if the pos is invalid on map
         function isValidPos = isValidPos(self, pos)
             isValidPos = true;
             s = size(self.obstacles);
@@ -154,12 +198,15 @@ classdef Map < handle
     end
     
     methods(Static)
+        
+        % return 0 if pos1 is closer to posTo than pos2 else 1
         function index = isCloser(pos1, pos2, posTo)
            pathVec1 = posTo - pos1;
            pathVec2 = posTo - pos2;
            index = (norm(pathVec1) < norm(pathVec2)) ; 
         end
         
+        % short the steps vector with optimized bublesort
         function [sortedStepVec] = quicksort(stepVec, posTo)
             s = size(stepVec);
             lastSwap = s(1)-1;
