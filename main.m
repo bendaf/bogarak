@@ -13,4 +13,7 @@ for i=1:time
 end
 
 figure;
-plot(bugMap.bugsInTime);
+plot(1:time,bugMap.bugsInTime);
+
+figure; 
+plot(1:time,sum(bugMap.bugsInTime(1:time,:)'>0));
