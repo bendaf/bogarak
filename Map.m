@@ -79,8 +79,9 @@ classdef Map < handle
                     end
                 end
                 if i <= s(2) && i > 0
-                    self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos,...
-                                self.nearestFood(self.bugs(i).pos));
+                    foodPos = self.nearestFood(self.bugs(i).pos);
+                    self.bugs(i).setHeadDirection(foodPos);
+                    self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                 end
             end
             

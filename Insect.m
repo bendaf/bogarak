@@ -37,11 +37,20 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             remFoodSpare = self.foodSpare;
         end
         
-        %%%
+        function self = setHeadDirection(self,pos)
+            if isempty(pos)
+                self.headDirection = rand*360;
+            else
+                delta = pos - self.pos;
+                self.headDirection = atan2(delta(2), delta(1)) *180 / pi;
+            end
+        end
+        
+        %%% Plot the insect
         function plot(self)
             plot(self.pos(1),self.pos(2),'o');
-            line([self.pos(1) self.pos(1)+cos(self.headDirection)], ...
-                 [self.pos(2) self.pos(2)+sin(self.headDirection)]);
+            line([self.pos(1) self.pos(1)+cosd(self.headDirection)], ...
+                 [self.pos(2) self.pos(2)+sind(self.headDirection)]);
         end
     end
 end
