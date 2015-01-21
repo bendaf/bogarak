@@ -11,9 +11,9 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             switch nargin
                 case 0
                     size = 100;
-                    foodSpare = round(rand*5);
+                    foodSpare = round(rand*8)+2;
                 case 1
-                    foodSpare = round(rand*5);
+                    foodSpare = round(rand*8)+2;
             end
             obj@Food(size, foodSpare);
         end
@@ -25,27 +25,15 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             remFoodSpare = self.foodSpare;
         end
         
-        %NEED TO MODIFY
-        %%% Calculate the shortest path to pos
-        % return with the next step 
-        function direction = calcDirection(self, pos)
-            direction = pos - self.pos;
-        end
-        
-        %%% Make a step randomly or the direction of pos
-        function step(self, pos)
-            switch nargin
-                case 2
-                    direction = self.calcDirection(pos);
-                otherwise
-                    direction = [round(rand*2)-1 round(rand*2)-1];
-            end
-            self.pos = self.pos + direction;
-        end
-        
         %%% Eat the food
         function remFoodSpare = eatFood(self, food)
             self.foodSpare = self.foodSpare + food.foodSpare;
+            remFoodSpare = self.foodSpare;
+        end
+        
+        %%% Eat the foodSpare
+        function remFoodSpare = eatFoodSpare(self, foodSpare)
+            self.foodSpare = self.foodSpare + foodSpare;
             remFoodSpare = self.foodSpare;
         end
         
