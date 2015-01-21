@@ -65,13 +65,6 @@ classdef Map < handle
         % Make a step
         function self = step(self)
             
-            % Save bugs
-            s = size(self.bugs);
-            self.stepCounter
-            for i = 1:s(2)
-                self.bugsInTime(self.stepCounter, i) = self.bugs(i).foodSpare; 
-            end
-            
             % The bugs eat the food and other bugs under them
             self.eat();
             
@@ -104,6 +97,13 @@ classdef Map < handle
             % Place a new food randomly
             if(round(rand*5)==1)
                 self.foodSupply = [self.foodSupply Food(self.mapSize(1))];
+            end
+            
+            % Save bugs
+            s = size(self.bugs);
+            self.stepCounter
+            for i = 1:s(2)
+                self.bugsInTime(self.stepCounter, i) = self.bugs(i).foodSpare; 
             end
         end
         
