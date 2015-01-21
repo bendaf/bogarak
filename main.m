@@ -14,7 +14,7 @@ for i=1:time
 end
 
 figure;
-plot(1:time,bugMap.bugsInTime);
+plot(1:time,bugMap.bugsInTime(1:time,:));
 xlabel('Time'), ylabel('Foodspare'),title('Foodspare of bugs in time');
 
 figure; 

@@ -68,9 +68,6 @@ classdef Map < handle
             % The bugs eat the food and other bugs under them
             self.eat();
             
-            %Increase stepcounter
-            self.stepCounter = self.stepCounter + 1;
-            
             % Bugs calculate their next step
             s = size(self.bugs);
             for i = 1:s(2)
@@ -83,12 +80,12 @@ classdef Map < handle
                     self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                     
 %                     Speed algorithm
-%                     if(self.bugs(i).foodSpare > 11)
-%                         fs = 11;
-%                     else
-%                         fs = self.bugs(i).foodSpare;
-%                     end
-                    if mod(self.stepCounter, self.bugs(i).foodSpare) == 0
+                    if(self.bugs(i).foodSpare > 11)
+                        fs = 11;
+                    else
+                        fs = self.bugs(i).foodSpare;
+                    end
+                    if mod(self.stepCounter, 13-fs) == 0
                         self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                     end
                 end
@@ -96,7 +93,14 @@ classdef Map < handle
             
             % Place a new food randomly
             if(round(rand*5)==1)
-                self.foodSupply = [self.foodSupply Food(self.mapSize(1))];
+                genFood = false;
+                while ~genFood
+                    idFood = Food(self.mapSize(1));
+                    if self.isValidPos(idFood.pos)
+                        self.foodSupply = [self.foodSupply idFood];
+                        genFood = true;
+                    end
+                end
             end
             
             % Save bugs
@@ -105,35 +109,9 @@ classdef Map < handle
             for i = 1:s(2)
                 self.bugsInTime(self.stepCounter, i) = self.bugs(i).foodSpare; 
             end
-        end
-        
-        % return with the pos of the nearest bug in the radious
-        function bugPos = nearestBug(self, pos, radius)
-            if nargin == 2 
-                radius = 2;  % 2 is the default
-            end
-            bugPos = [];
             
-            % search for the live bugs in the radious
-            s = size(self.bugs);
-            for i = -radius:radius
-                for j = -radius:radius
-                    if i ~= 0 || j ~= 0
-                        for ib = 1:s(2)
-                            if Map.isEqual(pos + [i j], self.bugs(ib).pos) && ...
-                                   self.bugs(ib).isAlive
-                                bugPos = [bugPos; pos + [i j]];
-                            end
-                        end
-                    end
-                end
-            end
-            % select the closest bug
-            s = size(bugPos);
-            if s(1)>1
-                bugPos = Map.quicksort(bugPos,pos);
-                bugPos = bugPos(1,:);
-            end
+            %Increase stepcounter
+            self.stepCounter = self.stepCounter + 1;
         end
         
         % Check which bug can eat and feed them
@@ -236,6 +214,35 @@ classdef Map < handle
                     goodStep = self.isValidPos(posFrom + step);
                 end
                 nextStep = posFrom + step;
+            end
+        end
+        
+        % return with the pos of the nearest bug in the radious
+        function bugPos = nearestBug(self, pos, radius)
+            if nargin == 2 
+                radius = 2;  % 2 is the default
+            end
+            bugPos = [];
+            
+            % search for the live bugs in the radious
+            s = size(self.bugs);
+            for i = -radius:radius
+                for j = -radius:radius
+                    if i ~= 0 || j ~= 0
+                        for ib = 1:s(2)
+                            if Map.isEqual(pos + [i j], self.bugs(ib).pos) && ...
+                                   self.bugs(ib).isAlive
+                                bugPos = [bugPos; pos + [i j]];
+                            end
+                        end
+                    end
+                end
+            end
+            % select the closest bug
+            s = size(bugPos);
+            if s(1)>1
+                bugPos = Map.quicksort(bugPos,pos);
+                bugPos = bugPos(1,:);
             end
         end
         

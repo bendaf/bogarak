@@ -11,9 +11,9 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
             switch nargin
                 case 0
                     size = 100;
-                    foodSpare = round(rand*8)+2;
+                    foodSpare = round(rand*5)+3;
                 case 1
-                    foodSpare = round(rand*8)+2;
+                    foodSpare = round(rand*5)+3;
             end
             obj@Food(size, foodSpare);
         end
