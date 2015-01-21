@@ -1,12 +1,16 @@
 clear all;
 
-numberOfBugs = 10;
-bugMap = Map(1,60);   % creates a map with 10 bugs
+numberOfBugs = 50;
+mapSize = 40;
+time = 5;
+bugMap = Map(numberOfBugs,mapSize,time);   % creates a map with 10 bugs
 
 grid on;
-hold on;
-while true
+for i=1:time
     bugMap.plot;
     bugMap.step;
-    pause(0.5) 
+    %pause(3) 
 end
+
+figure;
+plot(bugMap.bugsInTime);
