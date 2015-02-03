@@ -66,7 +66,7 @@ classdef Map < handle
         function self = step(self)
             
             % The bugs eat the food and other bugs under them
-            self.eat();
+            self.eat(0);
             
             % Bugs calculate their next step
             s = size(self.bugs);
@@ -80,19 +80,19 @@ classdef Map < handle
                     self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                     
 %                     Speed algorithm
-                    if(self.bugs(i).foodSpare > 11)
-                        fs = 11;
-                    else
+%                     if(self.bugs(i).foodSpare > 11)
+%                         fs = 11;
+%                     else
                         fs = self.bugs(i).foodSpare;
-                    end
-                    if mod(self.stepCounter, 13-fs) == 0
+%                     end
+                    if mod(self.stepCounter, round(fs)) == 0
                         self.bugs(i).pos=self.calcNextStep(self.bugs(i).pos, foodPos);
                     end
                 end
             end
             
             % Place a new food randomly
-            if(round(rand*5)==1)
+            if(round(rand*4)==1)
                 genFood = false;
                 while ~genFood
                     idFood = Food(self.mapSize(1));
@@ -115,7 +115,15 @@ classdef Map < handle
         end
         
         % Check which bug can eat and feed them
-        function self = eat(self)
+        function self = eat(self, version)
+            if(version>0)
+                self = eatEachOther(self);
+            else
+                self = eatDivideFood(self);
+            end
+        end
+        
+        function self = eatEachOther(self)
             % Bugs eat each other
             sb = size(self.bugs);
             for i = 1:sb(2)
@@ -145,36 +153,43 @@ classdef Map < handle
                         end
                     end
                 end
-                
-                %#In this version the bugs divide the food, but now they eat each other
-%                 curBugs = 0;
-%                 for j = 1:sb(2)
-%                     if i<=sf(2)
-%                         if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
-%                             curBugs = curBugs + self.bugs(j).foodSpare;
-%                         end
-%                     end
-%                 end
-%                 if curBugs > 0 
-%                     for j = 1:sb(2)
-%                         if i<=sf(2)
-%                             if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
-%                                 self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare * ...
-%                                 (self.bugs(j).foodSpare/curBugs));
-%                             end
-%                         end
-%                     end 
-%                     self.foodSupply(i) = [];
-%                     i = i-1; %#ok<FXSET>
-%                     sf = size(self.foodSupply);
-%                 end
+            end
+        end
+        
+        function self = eatDivideFood(self)
+            % Bugs eat the food
+            sb = size(self.bugs);
+            sf = size(self.foodSupply);
+            for i = 1:sf(2)
+                %#In this version the bugs divide the food
+                curBugs = 0;
+                for j = 1:sb(2)
+                    if i<=sf(2)
+                        if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+                            curBugs = curBugs + self.bugs(j).foodSpare;
+                        end
+                    end
+                end
+                if curBugs > 0 
+                    for j = 1:sb(2)
+                        if i<=sf(2)
+                            if Map.isEqual(self.bugs(j).pos, self.foodSupply(i).pos)
+                                self.bugs(j).eatFoodSpare(self.foodSupply(i).foodSpare * ...
+                                (self.bugs(j).foodSpare/curBugs));
+                            end
+                        end
+                    end 
+                    self.foodSupply(i) = [];
+                    i = i-1; %#ok<FXSET>
+                    sf = size(self.foodSupply);
+                end
             end
         end
         
         % return with the nearesr food or bug position to the pos
         function nfPos = nearestFood(self, pos)
             s = size(self.foodSupply);
-            nearestBug = self.nearestBug(pos,4);
+            nearestBug = self.nearestBug(pos);  %% change this to search nearest bug
             if s(2) == 0
                 nfPos = nearestBug;
             elseif s(2) == 1 && isempty(nearestBug)
@@ -220,29 +235,30 @@ classdef Map < handle
         % return with the pos of the nearest bug in the radious
         function bugPos = nearestBug(self, pos, radius)
             if nargin == 2 
-                radius = 2;  % 2 is the default
-            end
-            bugPos = [];
-            
-            % search for the live bugs in the radious
-            s = size(self.bugs);
-            for i = -radius:radius
-                for j = -radius:radius
-                    if i ~= 0 || j ~= 0
-                        for ib = 1:s(2)
-                            if Map.isEqual(pos + [i j], self.bugs(ib).pos) && ...
-                                   self.bugs(ib).isAlive
-                                bugPos = [bugPos; pos + [i j]];
+                bugPos = [];
+            else
+                bugPos = [];
+
+                % search for the live bugs in the radious
+                s = size(self.bugs);
+                for i = -radius:radius
+                    for j = -radius:radius
+                        if i ~= 0 || j ~= 0
+                            for ib = 1:s(2)
+                                if Map.isEqual(pos + [i j], self.bugs(ib).pos) && ...
+                                       self.bugs(ib).isAlive
+                                    bugPos = [bugPos; pos + [i j]]; %#ok<AGROW>
+                                end
                             end
                         end
                     end
                 end
-            end
-            % select the closest bug
-            s = size(bugPos);
-            if s(1)>1
-                bugPos = Map.quicksort(bugPos,pos);
-                bugPos = bugPos(1,:);
+                % select the closest bug
+                s = size(bugPos);
+                if s(1)>1
+                    bugPos = Map.quicksort(bugPos,pos);
+                    bugPos = bugPos(1,:);
+                end
             end
         end
         
@@ -289,12 +305,12 @@ classdef Map < handle
         % return 0 if pos1 is closer to posTo than pos2 else 1
         function index = isCloser(pos1, pos2, posTo)
             % if one of the pos is empty then false
-            if isempty(pos1) || isempty(pos2) || isempty(posTo)
+            if isempty(pos1)
                 index = 0;
             else
-                pathVec1 = posTo - pos1;
-                pathVec2 = posTo - pos2;
-                index = (norm(pathVec1) < norm(pathVec2)) ; 
+%                 pathVec1 = ;
+%                 pathVec2 = ;
+                index = (norm(posTo - pos1) < norm(posTo - pos2)) ; 
             end
         end
         
@@ -305,27 +321,31 @@ classdef Map < handle
         
         % short the steps vector with optimized bublesort
         function [sortedStepVec] = quicksort(stepVec, posTo)
-            s = size(stepVec);
-            lastSwap = s(1)-1;
-            for j = 1:s(1)-1
-                isSorted = true;
-                curSwap = -1;
-                for i = 1:lastSwap
-                    if ~Map.isCloser(stepVec(i,:),stepVec(i+1,:),posTo)
-                        idStepVec = stepVec(i,:);
-                        stepVec(i,:) = stepVec(i+1,:);
-                        stepVec(i+1,:) = idStepVec;
-                        isSorted = false;
-                        curSwap = i;
+            if nargin<2
+                sortedStepVec = stepVec;
+            else
+                s = size(stepVec);
+                lastSwap = s(1)-1;
+                for j = 1:s(1)-1
+                    isSorted = true;
+                    curSwap = -1;
+                    for i = 1:lastSwap
+                        if ~Map.isCloser(stepVec(i,:),stepVec(i+1,:), posTo)
+                            idStepVec = stepVec(i,:);
+                            stepVec(i,:) = stepVec(i+1,:);
+                            stepVec(i+1,:) = idStepVec;
+                            isSorted = false;
+                            curSwap = i;
+                        end
                     end
+                    if(isSorted)
+                        sortedStepVec = stepVec;
+                        return;
+                    end
+                    lastSwap = curSwap;
                 end
-                if(isSorted)
-                    sortedStepVec = stepVec;
-                    return;
-                end;
-                lastSwap = curSwap;
+                sortedStepVec = stepVec;
             end
-            sortedStepVec = stepVec;
         end
     end
 end
