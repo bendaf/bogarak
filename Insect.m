@@ -21,7 +21,11 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
         %%% Decrease the food spare of the insect 
         % return the remaining food spare 
         function remFoodSpare = decFoodSpare(self)
-            self.foodSpare = self.foodSpare - 1;
+            if(self.foodSpare>=1)
+                self.foodSpare = self.foodSpare - 1;
+            else
+                self.foodSpare = 0;
+            end
             remFoodSpare = self.foodSpare;
         end
         
@@ -48,7 +52,7 @@ classdef Insect < Food % Insect inherite from food (pos and foodSpare)
         end
         
         function isAlive = isAlive(self)
-            isAlive = self.foodSpare >= 1;
+            isAlive = self.foodSpare > 0;
         end
         
         %%% Plot the insect
